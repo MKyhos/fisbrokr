@@ -24,16 +24,27 @@ Request <- R6::R6Class(
   public = list(
     url = NULL,
     capability = NULL,
-    initialize = function(url) {
-      self$url <- url
-      private$service <- infer_service(url)
-      private$get_capability(url)
-    }
+    data = NULL
   )
 )
 
 
 # Request methods --------------------------------------------------------------
+
+#' Intialize / Contructor
+#' 
+#' @param url <string> The URL pointing to the service / endpoint of
+#'  FIS-Broker that you wish to utilize.
+request_initialize <- function(url) {
+  #TODO check url validity
+  assertthat::is.string(url) 
+      self$url <- url
+      private$service <- infer_service(url)
+      private$get_capability(url)
+    }
+
+Request$set("public", name = "initialize", value = request_initialize)
+
 
 #' Get capabilities of an endpoint
 #' 
@@ -61,11 +72,14 @@ get_capability <- function(url) {
     xml2::read_xml()
 
   if (service == "WMS") {
+    #TODO Implement correct XML/HTML Parsing of capability response
     cap$layers <- tibble::tibble(
       position = as.numeric(extract_feat(res, "Name")),
       title = extract_feat(res, "Title"),
-      abstract = extract_feat(res, "Abstract")) %>%
-      dplyr::arrange(position)
+
+  } else if (service == "WFS") {
+    #TODO Implement parsing for capability response from WFS service
+
   }
 
   self$capability <- cap
